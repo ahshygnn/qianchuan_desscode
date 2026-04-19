@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- 前端版本标记：若控制台仍出现 api.coze.cn，请 Ctrl+F5 强刷或换浏览器 -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>千川女装素材生成工具</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+  :root {
+    --bg: #F7F6F2;
+    --surface: #FFFFFF;
+    --border: #E8E6DF;
+    --border-strong: #D4D0C8;
+    --text-primary: #1A1916;
+    --text-secondary: #6B6860;
+    --text-hint: #AAA89F;
+    --accent: #C8502A;
+    --accent-light: #FAF0EC;
+    --blue: #2A5FC8;
+    --blue-light: #EEF2FA;
+    --green: #2A8C52;
+    --green-light: #EEF7F2;
+    --purple: #6B2AC8;
+    --purple-light: #F3EEF9;
+    --amber: #C87D2A;
+    --amber-light: #FAF4EC;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans SC', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .app-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.3px;
+  }
+
+  .logo span {
+    color: var(--accent);
+  }
+
+  .tagline {
+    margin-left: 16px;
+    font-size: 12px;
+    color: var(--text-hint);
+    border-left: 1px solid var(--border);
+    padding-left: 16px;
+  }
+
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 24px 24px 48px;
+  }
+
+  .tab-nav {
+    display: flex;
+    gap: 2px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 4px;
+    margin-bottom: 20px;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 9px 16px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.18s;
+    font-family: inherit;
+  }
+
+  .tab-btn:hover { background: var(--bg); color: var(--text-primary); }
+
+  .tab-btn.active {
+    background: var(--text-primary);
+    color: white;
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+  }
+
+  .card-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-hint);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 14px;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 16px 0;
+  }
+
+  .field { margin-bottom: 12px; }
+
+  .field:last-child { margin-bottom: 0; }
+
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+  }
+
+  .field label .req { color: var(--accent); margin-left: 2px; }
+  .field label .opt {
+    font-size: 10px;
+    color: var(--text-hint);
+    font-weight: 400;
+    margin-left: 4px;
+    background: var(--bg);
+    padding: 1px 6px;
+    border-radius: 10px;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    padding: 8px 11px;
+    font-size: 13px;
+    font-family: inherit;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--text-primary);
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--text-primary);
+    box-shadow: 0 0 0 3px rgba(26,25,22,0.06);
+    background: white;
+  }
+
+  input.error, select.error, textarea.error {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(200,80,42,0.08);
+  }
+
+  textarea { min-height: 72px; resize: vertical; line-height: 1.6; }
+
+  .btn-primary {
+    width: 100%;
+    padding: 11px;
+    background: var(--text-primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    margin-top: 4px;
+    letter-spacing: 0.2px;
+  }
+
+  .btn-primary:hover { opacity: 0.88; }
+  .btn-primary:active { transform: scale(0.99); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .btn-secondary {
+    width: 100%;
+    padding: 9px;
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-top: 8px;
+  }
+
+  .btn-secondary:hover { background: var(--bg); color: var(--text-primary); }
+  .btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-success {
+    background: var(--green);
+    color: white;
+    border-color: var(--green);
+  }
+
+  .version-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+
+  .vtab {
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+
+  .vtab-a { background: var(--accent-light); color: var(--accent); border-color: #EAC4B8; }
+  .vtab-b { background: var(--blue-light); color: var(--blue); border-color: #C4D0EA; }
+  .vtab-c { background: var(--green-light); color: var(--green); border-color: #C4DCCE; }
+  .vtab-d { background: var(--purple-light); color: var(--purple); border-color: #CEC4E8; }
+
+  .vtab.active { opacity: 1; box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
+  .vtab:not(.active) { opacity: 0.55; }
+
+  .output-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    min-height: 80px;
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .output-placeholder {
+    text-align: center;
+    padding: 20px 0;
+    color: var(--text-hint);
+    font-size: 13px;
+  }
+
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px 0;
+    color: var(--text-hint);
+    font-size: 13px;
+  }
+
+  .spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--text-primary);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .vtype-group { display: flex; flex-direction: column; gap: 8px; }
+
+  .vtype {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 11px 13px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--bg);
+  }
+
+  .vtype:hover { border-color: var(--border-strong); background: white; }
+
+  .vtype.selected {
+    border-color: var(--text-primary);
+    background: white;
+  }
+
+  .vtype-radio {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border-strong);
+    margin-top: 2px;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .vtype.selected .vtype-radio {
+    border-color: var(--text-primary);
+    background: var(--text-primary);
+  }
+
+  .vtype.selected .vtype-radio::after {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: white;
+  }
+
+  .vtype-label { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+  .vtype-desc { font-size: 11px; color: var(--text-hint); margin-top: 2px; }
+
+  .upload-zone {
+    border: 1.5px dashed var(--border-strong);
+    border-radius: var(--radius-md);
+    padding: 18px;
+    text-align: center;
+    background: var(--bg);
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+
+  .upload-zone:hover { border-color: var(--text-primary); background: white; }
+
+  .upload-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .upload-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 8px;
+  }
+
+  .upload-text { font-size: 12px; color: var(--text-secondary); }
+  .upload-hint { font-size: 11px; color: var(--text-hint); margin-top: 2px; }
+
+  .upload-preview {
+    width: 100%;
+    max-height: 120px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    display: none;
+  }
+
+  .upload-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .upload-label { font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-weight: 500;
+  }
+
+  .badge-ok { background: var(--green-light); color: var(--green); }
+  .badge-err { background: var(--accent-light); color: var(--accent); }
+
+  .result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .error-msg {
+    font-size: 12px;
+    color: var(--accent);
+    margin-top: 6px;
+    padding: 8px 10px;
+    background: var(--accent-light);
+    border-radius: var(--radius-sm);
+    display: none;
+  }
+
+  .video-output {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    min-height: 80px;
+  }
+
+  video {
+    width: 100%;
+    max-height: 320px;
+    display: block;
+  }
+
+  .creative-tag {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 10px;
+    background: var(--amber-light);
+    color: var(--amber);
+    border-radius: 20px;
+    border: 1px solid #EAD8C4;
+    margin-bottom: 10px;
+  }
+
+  .md-output h1, .md-output h2, .md-output h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 14px 0 6px;
+  }
+  .md-output h3:first-child { margin-top: 0; }
+  .md-output p { margin-bottom: 8px; color: var(--text-primary); }
+  .md-output hr { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+  .md-output ol, .md-output ul { padding-left: 18px; margin-bottom: 8px; }
+  .md-output li { margin-bottom: 4px; color: var(--text-primary); }
+  .md-output strong { font-weight: 600; color: var(--text-primary); }
+  .md-output em { font-style: italic; }
+  .md-output blockquote { border-left: 3px solid var(--border-strong); padding-left: 10px; color: var(--text-secondary); margin: 8px 0; }
+
+  @media (max-width: 600px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    .upload-row { grid-template-columns: 1fr; }
+    .container { padding: 16px 16px 40px; }
+    .app-header { padding: 0 16px; }
+    .tagline { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="logo">千川<span>女装</span>素材生成</div>
+  <div class="tagline">千川投放 · AI素材一键生成</div>
+</header>
+
+<div class="container">
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab(0, this)">口播文案生成</button>
+    <button class="tab-btn" onclick="switchTab(1, this)">视频素材生成</button>
+    <button class="tab-btn" onclick="switchTab(2, this)">违禁词检测</button>
+  </div>
+
+  <!-- Tab 1: 文案生成 -->
+  <div class="panel active" id="panel0">
+    <div class="card">
+      <div class="card-title">商品信息</div>
+      <div class="grid-2">
+        <div class="field">
+          <label>商品名称<span class="req">*</span></label>
+          <input type="text" id="c_product_name" placeholder="如：收腰连衣裙">
+        </div>
+        <div class="field">
+          <label>售价<span class="req">*</span></label>
+          <input type="text" id="c_price" placeholder="如：89元">
+        </div>
+      </div>
+      <div class="field">
+        <label>核心卖点<span class="req">*</span></label>
+        <textarea id="c_ksp" placeholder="如：显瘦、面料垂感好、版型修身、颜色百搭"></textarea>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>投放阶段<span class="req">*</span></label>
+          <select id="c_stage">
+            <option value="">请选择</option>
+            <option value="新品刚上，还没有销量">新品刚上，还没有销量</option>
+            <option value="已经有订单，准备放量">已经有订单，准备放量</option>
+            <option value="双11/618大促期间">双11/618大促期间</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>对标人群<span class="req">*</span></label>
+          <input type="text" id="c_audience" placeholder="如：职场新人、25-35岁宝妈">
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="card-title">选填信息（填了更精准）</div>
+      <div class="grid-2">
+        <div class="field">
+          <label>适合身材范围<span class="opt">选填</span></label>
+          <input type="text" id="c_body" placeholder="如：100-130斤穿M码">
+        </div>
+        <div class="field">
+          <label>面料成分<span class="opt">选填</span></label>
+          <input type="text" id="c_material" placeholder="如：95%棉 5%氨纶">
+        </div>
+      </div>
+      <div class="field">
+        <label>色差说明<span class="opt">选填</span></label>
+        <input type="text" id="c_color" placeholder="如：实物颜色比图片略深一点">
+      </div>
+    </div>
+    <div id="c_error" class="error-msg"></div>
+    <button class="btn-primary" id="c_btn" onclick="generateCopy()">生成四套口播脚本</button>
+
+    <div class="card" style="margin-top:12px">
+      <div class="result-header">
+        <div class="card-title" style="margin-bottom:0">生成结果</div>
+        <span id="c_status"></span>
+      </div>
+      <div class="version-tabs">
+        <button class="vtab vtab-a active" onclick="switchVersion(0, this)">A · 痛点型</button>
+        <button class="vtab vtab-b" onclick="switchVersion(1, this)">B · 场合种草</button>
+        <button class="vtab vtab-c" onclick="switchVersion(2, this)">C · 品质对比</button>
+        <button class="vtab vtab-d" onclick="switchVersion(3, this)">D · 真实口碑</button>
+      </div>
+      <div class="output-box" id="c_output">
+        <div class="output-placeholder">填写商品信息后点击生成，四套口播脚本将在这里展示</div>
+      </div>
+      <button class="btn-secondary" id="c_copy_btn" onclick="copyOutput('c_output', this)" disabled>复制当前版本</button>
+    </div>
+  </div>
+
+  <!-- Tab 2: 视频生成 -->
+  <div class="panel" id="panel1">
+    <div class="card">
+      <div class="card-title">商品信息</div>
+      <div class="grid-2">
+        <div class="field">
+          <label>商品名称<span class="req">*</span></label>
+          <input type="text" id="v_name" placeholder="如：收腰连衣裙">
+        </div>
+        <div class="field">
+          <label>对标人群<span class="req">*</span></label>
+          <input type="text" id="v_audience" placeholder="如：职场新人">
+        </div>
+      </div>
+      <div class="field">
+        <label>核心卖点<span class="req">*</span></label>
+        <textarea id="v_ksp" placeholder="如：显瘦、垂感好、修身"></textarea>
+      </div>
+      <div class="field">
+        <label>投放阶段<span class="req">*</span></label>
+        <select id="v_stage">
+          <option value="">请选择</option>
+          <option value="新品刚上，还没有销量">新品刚上，还没有销量</option>
+          <option value="已经有订单，准备放量">已经有订单，准备放量</option>
+          <option value="双11/618大促期间">双11/618大促期间</option>
+        </select>
+      </div>
+      <div class="divider"></div>
+      <div class="card-title">视频类型</div>
+      <div class="vtype-group">
+        <div class="vtype selected" onclick="selectVtype(this, 'single', '无人物')">
+          <div class="vtype-radio"></div>
+          <div>
+            <div class="vtype-label">无人物视频</div>
+            <div class="vtype-desc">上传商品图（挂拍/平铺），生成服装微动视频</div>
+          </div>
+        </div>
+        <div class="vtype" onclick="selectVtype(this, 'single', '模特')">
+          <div class="vtype-radio"></div>
+          <div>
+            <div class="vtype-label">有人物视频（模特图）</div>
+            <div class="vtype-desc">上传真人模特试穿图，直接生成模特视频</div>
+          </div>
+        </div>
+        <div class="vtype" onclick="selectVtype(this, 'double', '数字人')">
+          <div class="vtype-radio"></div>
+          <div>
+            <div class="vtype-label">有人物视频（数字人）</div>
+            <div class="vtype-desc">上传商品图 + 数字人图片，自动合成试穿视频</div>
+          </div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div id="upload_single">
+        <div class="field">
+          <label id="upload_single_label">上传商品图<span class="req">*</span></label>
+          <div class="upload-zone" id="zone_single">
+            <input type="file" accept="image/*" onchange="previewImage(this, 'preview_single', 'zone_single')">
+            <img id="preview_single" class="upload-preview">
+            <div id="zone_single_content">
+              <div class="upload-icon">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2v9M4 7l4-5 4 5" stroke="#6B6860" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="#6B6860" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+              <div class="upload-text">点击上传图片</div>
+              <div class="upload-hint">支持 JPG、PNG，建议尺寸 1:1</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="upload_double" style="display:none">
+        <div class="upload-row">
+          <div>
+            <div class="upload-label">商品图（无人物）<span class="req">*</span></div>
+            <div class="upload-zone" id="zone_product">
+              <input type="file" accept="image/*" onchange="previewImage(this, 'preview_product', 'zone_product')">
+              <img id="preview_product" class="upload-preview">
+              <div id="zone_product_content">
+                <div class="upload-icon">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2v9M4 7 4-5 4 5" stroke="#6B6860" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="#6B6860" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </div>
+                <div class="upload-text">挂拍或平铺商品图</div>
+                <div class="upload-hint">JPG / PNG</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="upload-label">数字人图片<span class="req">*</span></div>
+            <div class="upload-zone" id="zone_avatar">
+              <input type="file" accept="image/*" onchange="previewImage(this, 'preview_avatar', 'zone_avatar')">
+              <img id="preview_avatar" class="upload-preview">
+              <div id="zone_avatar_content">
+                <div class="upload-icon">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2v9M4 7l4-5 4 5" stroke="#6B6860" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="#6B6860" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </div>
+                <div class="upload-text">数字人模特图</div>
+                <div class="upload-hint">JPG / PNG</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="v_error" class="error-msg"></div>
+    <button class="btn-primary" id="v_btn" onclick="generateVideo()">抽取创意并生成视频</button>
+
+    <div class="card" style="margin-top:12px">
+      <div class="result-header">
+        <div class="card-title" style="margin-bottom:0">本次创意</div>
+        <span id="v_status"></span>
+      </div>
+      <div id="v_creative" style="display:none; margin-bottom:10px"></div>
+      <div class="video-output" id="v_output">
+        <div class="output-placeholder" style="padding:24px 0">生成后视频将在这里展示</div>
+      </div>
+      <button class="btn-secondary" id="v_retry_btn" onclick="generateVideo()" disabled>不满意，重新抽取</button>
+    </div>
+  </div>
+
+  <!-- Tab 3: 违禁词检测 -->
+  <div class="panel" id="panel2">
+    <div class="card">
+      <div class="card-title">粘贴待检测文案</div>
+      <div class="field">
+        <label>原始文案<span class="req">*</span></label>
+        <textarea id="d_copy" style="min-height:120px" placeholder="粘贴你想检测的文案，支持任何来源（自己写的、竞品文案、达人文案均可）"></textarea>
+      </div>
+      <div class="divider"></div>
+      <div class="card-title">选填信息（填了给针对性建议）</div>
+      <div class="grid-2">
+        <div class="field">
+          <label>投放阶段<span class="opt">选填</span></label>
+          <select id="d_stage">
+            <option value="">不填，给通用建议</option>
+            <option value="新品刚上，还没有销量">新品刚上，还没有销量</option>
+            <option value="已经有订单，准备放量">已经有订单，准备放量</option>
+            <option value="双11/618大促期间">双11/618大促期间</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>对标人群<span class="opt">选填</span></label>
+          <input type="text" id="d_audience" placeholder="如：职场新人">
+        </div>
+      </div>
+    </div>
+    <div id="d_error" class="error-msg"></div>
+    <button class="btn-primary" id="d_btn" onclick="detectViolation()">检测违禁词并优化</button>
+
+    <div class="card" style="margin-top:12px">
+      <div class="result-header">
+        <div class="card-title" style="margin-bottom:0">检测结果</div>
+        <span id="d_status"></span>
+      </div>
+      <div class="output-box" id="d_output">
+        <div class="output-placeholder">检测结果将在这里展示，包含违禁词定位、合规改写版本和优化建议</div>
+      </div>
+      <button class="btn-secondary" id="d_copy_btn" onclick="copyOutput('d_output', this)" disabled>复制改写版本</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// 构建 ID：与磁盘 index.html 同步；若此处不是 jimeng-local，说明浏览器在用缓存页面
+window.__FE_BUILD__ = 'jimeng-local-v2';
+
+// ========== 配置 ==========
+const CONFIG = {
+  // 同源，避免端口不一致触发跨域
+  API_BASE: '',
+};
+
+// ========== 状态 ==========
+let currentVideoType = '无人物';
+let copyVersions = ['', '', '', ''];
+let currentVersion = 0;
+let uploadedImages = { single: null, product: null, avatar: null };
+
+// ========== Tab切换 ==========
+function switchTab(idx, el) {
+  document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+  document.querySelectorAll('.panel').forEach((p, i) => p.classList.toggle('active', i === idx));
+}
+
+// ========== 版本切换 ==========
+function switchVersion(idx, el) {
+  document.querySelectorAll('.vtab').forEach((b, i) => b.classList.toggle('active', i === idx));
+  currentVersion = idx;
+  const box = document.getElementById('c_output');
+  box.classList.add('md-output');
+  if (copyVersions[idx]) {
+    box.innerHTML = marked.parse(copyVersions[idx]);
+  } else {
+    box.innerHTML = '<div class="output-placeholder">此版本暂无内容</div>';
+  }
+}
+
+// ========== 视频类型切换 ==========
+function selectVtype(el, mode, type) {
+  document.querySelectorAll('.vtype').forEach(v => v.classList.remove('selected'));
+  el.classList.add('selected');
+  currentVideoType = type;
+  const lbl = document.getElementById('upload_single_label');
+  if (mode === 'single') {
+    document.getElementById('upload_single').style.display = 'block';
+    document.getElementById('upload_double').style.display = 'none';
+    lbl.innerHTML = (type === '模特' ? '上传模特试穿图' : '上传商品图') + '<span class="req">*</span>';
+  } else {
+    document.getElementById('upload_single').style.display = 'none';
+    document.getElementById('upload_double').style.display = 'block';
+  }
+}
+
+// ========== 图片预览 ==========
+function previewImage(input, previewId, zoneId) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = document.getElementById(previewId);
+    const content = document.getElementById(zoneId + '_content');
+    img.src = e.target.result;
+    img.style.display = 'block';
+    if (content) content.style.display = 'none';
+    const key = zoneId === 'zone_single' ? 'single' : zoneId === 'zone_product' ? 'product' : 'avatar';
+    uploadedImages[key] = { file, dataUrl: e.target.result, base64: e.target.result.split(',')[1] };
+  };
+  reader.readAsDataURL(file);
+}
+
+// ========== 错误提示 ==========
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 4000);
+}
+
+// ========== 复制功能 ==========
+function copyOutput(boxId, btn) {
+  const el = document.getElementById(boxId);
+  const text = el.innerText || el.textContent;
+  if (!text || text.includes('将在这里') || text.includes('检测结果将')) return;
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '已复制 ✓';
+    btn.classList.add('btn-success');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('btn-success'); }, 1500);
+  });
+}
+
+// ========== 解析四套文案 ==========
+function parseVersions(text) {
+  const versions = ['', '', '', ''];
+  const patterns = [
+    /【素材包A[^】]*】([\s\S]*?)(?=【素材包B|$)/,
+    /【素材包B[^】]*】([\s\S]*?)(?=【素材包C|$)/,
+    /【素材包C[^】]*】([\s\S]*?)(?=【素材包D|$)/,
+    /【素材包D[^】]*】([\s\S]*?)(?=📋|⚠️|$)/,
+  ];
+  patterns.forEach((p, i) => {
+    const m = text.match(p);
+    if (m) versions[i] = m[1].trim();
+  });
+  if (versions.every(v => !v)) versions[0] = text;
+  return versions;
+}
+
+// ========== 文案生成 ==========
+async function generateCopy() {
+  const name = document.getElementById('c_product_name').value.trim();
+  const price = document.getElementById('c_price').value.trim();
+  const ksp = document.getElementById('c_ksp').value.trim();
+  const stage = document.getElementById('c_stage').value;
+  const audience = document.getElementById('c_audience').value.trim();
+
+  if (!name) return showError('c_error', '请填写商品名称');
+  if (!price) return showError('c_error', '请填写售价');
+  if (!ksp) return showError('c_error', '请填写核心卖点');
+  if (!stage) return showError('c_error', '请选择投放阶段');
+  if (!audience) return showError('c_error', '请填写对标人群');
+
+  const btn = document.getElementById('c_btn');
+  btn.disabled = true;
+  btn.textContent = '生成中...';
+  document.getElementById('c_copy_btn').disabled = true;
+  document.getElementById('c_status').innerHTML = '<div class="loading"><div class="spinner"></div>AI 生成中，约30秒</div>';
+  document.getElementById('c_output').innerHTML = '<div class="output-placeholder">正在为您生成四套差异化口播脚本...</div>';
+
+  try {
+    const fd = new FormData();
+    fd.append('product_name', name);
+    fd.append('price', price);
+    fd.append('key_selling_point', ksp);
+    fd.append('stage', stage);
+    fd.append('target_audience', audience);
+
+    const resp = await fetch(`${CONFIG.API_BASE}/api/copy`, {
+      method: 'POST',
+      body: fd
+    });
+    const data = await resp.json();
+    if (!data.success) throw new Error(data.error || '生成失败');
+
+    copyVersions = parseVersions(data.text || '');
+    const out = document.getElementById('c_output');
+    out.classList.add('md-output');
+    out.innerHTML = marked.parse(copyVersions[0] || data.text || '生成成功，但未返回内容');
+    document.getElementById('c_status').innerHTML = '<span class="status-badge badge-ok">✓ 生成完成</span>';
+    document.getElementById('c_copy_btn').disabled = false;
+
+  } catch (e) {
+    document.getElementById('c_output').innerHTML = '<div class="output-placeholder">生成失败：' + e.message + '</div>';
+    document.getElementById('c_status').innerHTML = '<span class="status-badge badge-err">生成失败</span>';
+    console.error(e);
+  }
+
+  btn.disabled = false;
+  btn.textContent = '生成四套口播脚本';
+}
+
+// ========== 视频生成 ==========
+async function generateVideo() {
+  const name = document.getElementById('v_name').value.trim();
+  const ksp = document.getElementById('v_ksp').value.trim();
+  const stage = document.getElementById('v_stage').value;
+  const audience = document.getElementById('v_audience').value.trim();
+
+  if (!name) return showError('v_error', '请填写商品名称');
+  if (!ksp) return showError('v_error', '请填写核心卖点');
+  if (!stage) return showError('v_error', '请选择投放阶段');
+  if (!audience) return showError('v_error', '请填写对标人群');
+
+  if (currentVideoType === '数字人') {
+    if (!uploadedImages.product) return showError('v_error', '请上传商品图');
+    if (!uploadedImages.avatar) return showError('v_error', '请上传数字人图片');
+  } else {
+    if (!uploadedImages.single) return showError('v_error', '请上传图片');
+  }
+
+  const btn = document.getElementById('v_btn');
+  const retryBtn = document.getElementById('v_retry_btn');
+  btn.disabled = true;
+  btn.textContent = '生成中...';
+  retryBtn.disabled = true;
+  document.getElementById('v_status').innerHTML = '<div class="loading"><div class="spinner"></div>AI 生成中，约60秒</div>';
+  document.getElementById('v_creative').style.display = 'none';
+  document.getElementById('v_output').innerHTML = '<div class="output-placeholder" style="padding:24px 0">正在生成视频，请稍候...</div>';
+
+  try {
+    const fd = new FormData();
+    fd.append('product_name', name);
+    fd.append('key_selling_point', ksp);
+    fd.append('stage', stage);
+    fd.append('target_audience', audience);
+    fd.append('video_type', currentVideoType);
+
+    if (currentVideoType === '数字人') {
+      fd.append('product_image', uploadedImages.product.file);
+      fd.append('avatar_image', uploadedImages.avatar.file);
+    } else if (currentVideoType === '模特') {
+      fd.append('model_image', uploadedImages.single.file);
+    } else {
+      fd.append('product_image', uploadedImages.single.file);
+    }
+
+    const resp = await fetch(`${CONFIG.API_BASE}/api/video`, {
+      method: 'POST',
+      body: fd
+    });
+    const data = await resp.json();
+    if (!data.success) throw new Error(data.error || '生成失败');
+
+    if (data.creative_text) {
+      const creative = document.getElementById('v_creative');
+      creative.innerHTML = `<span class="creative-tag">🎬 ${data.creative_text}</span>`;
+      creative.style.display = 'block';
+    }
+
+    if (data.video_url) {
+      document.getElementById('v_output').innerHTML = `
+        <div class="output-placeholder" style="padding:20px 12px">
+          视频已生成。为保证稳定播放，请点击下方按钮在新窗口打开。
+        </div>
+        <div style="margin-top:12px;text-align:center">
+          <a href="${data.video_url}" target="_blank" rel="noopener noreferrer" class="btn-secondary" style="display:inline-block;text-decoration:none">
+            打开视频（新窗口）
+          </a>
+        </div>
+      `;
+      document.getElementById('v_status').innerHTML = '<span class="status-badge badge-ok">✓ 生成成功</span>';
+    } else {
+      throw new Error('未获取到视频链接');
+    }
+
+  } catch (e) {
+    document.getElementById('v_output').innerHTML = '<div class="output-placeholder" style="padding:24px 0">生成失败：' + e.message + '</div>';
+    document.getElementById('v_status').innerHTML = '<span class="status-badge badge-err">生成失败</span>';
+    console.error(e);
+  }
+
+  btn.disabled = false;
+  btn.textContent = '抽取创意并生成视频';
+  retryBtn.disabled = false;
+}
+
+// ========== 违禁词检测 ==========
+async function detectViolation() {
+  const copy = document.getElementById('d_copy').value.trim();
+  if (!copy) return showError('d_error', '请粘贴待检测文案');
+
+  const btn = document.getElementById('d_btn');
+  btn.disabled = true;
+  btn.textContent = '检测中...';
+  document.getElementById('d_copy_btn').disabled = true;
+  document.getElementById('d_status').innerHTML = '<div class="loading"><div class="spinner"></div>检测中，约15秒</div>';
+  document.getElementById('d_output').innerHTML = '<div class="output-placeholder">正在检测违禁词...</div>';
+
+  try {
+    const fd = new FormData();
+    fd.append('input_copy', copy);
+    fd.append('stage', document.getElementById('d_stage').value);
+    fd.append('target_audience', document.getElementById('d_audience').value.trim());
+
+    const resp = await fetch(`${CONFIG.API_BASE}/api/check`, { method: 'POST', body: fd });
+    const data = await resp.json();
+    if (!data.success) throw new Error(data.error || '检测失败');
+
+    const dOut = document.getElementById('d_output');
+    dOut.classList.add('md-output');
+    dOut.innerHTML = marked.parse(data.text);
+    document.getElementById('d_status').innerHTML = '<span class="status-badge badge-ok">✓ 检测完成</span>';
+    document.getElementById('d_copy_btn').disabled = false;
+
+  } catch (e) {
+    document.getElementById('d_output').innerHTML = '<div class="output-placeholder">检测失败：' + e.message + '</div>';
+    document.getElementById('d_status').innerHTML = '<span class="status-badge badge-err">检测失败</span>';
+    console.error(e);
+  }
+
+  btn.disabled = false;
+  btn.textContent = '检测违禁词并优化';
+}
+</script>
+</body>
+</html>

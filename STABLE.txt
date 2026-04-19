@@ -1,0 +1,24 @@
+稳定运行说明（千川女装素材工具）
+
+1) 启动方式（推荐）
+   双击 start.bat，或在项目目录执行：
+   python -m uvicorn main:app --host 127.0.0.1 --port 8001
+
+2) 打开页面
+   浏览器访问：http://127.0.0.1:8001/
+   不要直接双击打开 index.html（file:// 会导致接口不可用）。
+
+3) 若又出现 api.coze.cn / uploadImageToCoze 报错
+   说明浏览器仍在使用旧版页面缓存。请：
+   - 按 Ctrl+F5 强制刷新，或
+   - 换用 Chrome/Edge 普通窗口（不要用旧书签），或
+   - 在地址栏回车确认访问的是本机 8001 端口。
+
+4) 防止文件被旧版覆盖
+   - 安装 Git 后在本目录执行 git init，重要修改后 git commit。
+   - 若使用网盘同步，尽量别把开发目录放在同步文件夹里。
+
+5) 自检
+   在浏览器按 F12 打开控制台，输入：window.__FE_BUILD__
+   应显示：jimeng-local-v2
+   若不是，说明加载的不是当前磁盘上的 index.html。
