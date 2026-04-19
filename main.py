@@ -41,6 +41,8 @@ SILICONFLOW_URL = "https://api.siliconflow.cn/v1/chat/completions"
 JIMENG_AK = os.environ.get("VOLCENGINE_ACCESS_KEY", "").strip()
 JIMENG_SK = os.environ.get("VOLCENGINE_SECRET_KEY", "").strip()
 JIMENG_BASE = "https://visual.volcengineapi.com"
+# 图生视频服务标识，以即梦文档中的 req_key 为准（720P 图生首帧见 jimeng_i2v_first_v30）
+JIMENG_REQ_KEY = (os.environ.get("JIMENG_REQ_KEY") or "jimeng_i2v_first_v30").strip()
 
 
 def _check_secrets_for_llm() -> None:
@@ -494,13 +496,13 @@ async def jimeng_submit_video(image_bytes: bytes, prompt_text: str) -> str:
     _check_secrets_for_jimeng()
     import base64 as b64
     img_b64 = b64.b64encode(image_bytes).decode()
+    # 与「即梦AI-视频生成3.0 720P-图生视频-首帧」文档一致：req_key、图、prompt、seed、frames；勿传文档未列字段
     payload = {
-        "req_key": "jimeng_ti2v_v30_pro",
+        "req_key": JIMENG_REQ_KEY,
         "prompt": prompt_text,
         "binary_data_base64": [img_b64],
         "frames": 121,
-        "aspect_ratio": "9:16",
-        "seed": -1
+        "seed": -1,
     }
     body = json.dumps(payload)
     headers = jimeng_sign(JIMENG_AK, JIMENG_SK, "POST", "/", body, "CVSync2AsyncSubmitTask")
@@ -529,7 +531,7 @@ async def jimeng_submit_video(image_bytes: bytes, prompt_text: str) -> str:
 # ========== 即梦：查询任务结果 ==========
 async def jimeng_query_video(task_id: str) -> str:
     payload = {
-        "req_key": "jimeng_ti2v_v30_pro",
+        "req_key": JIMENG_REQ_KEY,
         "task_id": task_id
     }
     body = json.dumps(payload)
